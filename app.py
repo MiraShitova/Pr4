@@ -217,6 +217,5 @@ api.add_resource(Store, "/store/<string:name>", "/store")
 api.add_resource(Tag, "/tag/<string:name>", "/tag")
 api.add_resource(LinkTagToItem, "/item/<int:item_id>/tag/<int:tag_id>")
 
-@app.before_first_request
-def create_tables():
+with app.app_context():
     db.create_all()
