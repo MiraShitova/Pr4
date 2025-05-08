@@ -4,6 +4,10 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from marshmallow import Schema, fields
 
+import logging
+logging.basicConfig()
+logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///data.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -94,11 +98,20 @@ class UserSchema(Schema):
 class UserRegister(Resource):
     def post(self):
         data = request.get_json()
+
+        if not data or "username" not in data or "password" not in data:
+            return {"message": "Username and password required"}, 400
+
         if UserModel.query.filter_by(username=data["username"]).first():
             return {"message": "User already exists"}, 400
-        user = UserModel(**data)
-        db.session.add(user)
-        db.session.commit()
+
+        try:
+            user = UserModel(username=data["username"], password=data["password"])
+            db.session.add(user)
+            db.session.commit()
+        except Exception as e:
+            return {"message": str(e)}, 500
+
         return {"message": "User created successfully"}, 201
 
 class UserLogin(Resource):
