@@ -217,7 +217,6 @@ api.add_resource(Store, "/store/<string:name>", "/store")
 api.add_resource(Tag, "/tag/<string:name>", "/tag")
 api.add_resource(LinkTagToItem, "/item/<int:item_id>/tag/<int:tag_id>")
 
-if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True)
+@app.before_first_request
+def create_tables():
+    db.create_all()
